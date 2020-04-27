@@ -1,0 +1,19 @@
+## Project
+doc/tags
+
+## Vim
+*.s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+## OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
