@@ -7,7 +7,7 @@ vim-paraglide is a simple plugin to make navigating around paragraphs easier. Th
 
 * jumps to the last *non-blank* line, instead of the line after the paragraph
 * jumps to the beginnng or end of the paragraph
-* works with motions (operator-pending mode) and visual mode
+* works with motions (operator-pending mode)
 
 
 ## Default mappings
@@ -31,6 +31,11 @@ To set up a custom mapping, add the following to your .vimrc:
 noremap <silent> gj <Plug>ParaglideDownAny
 noremap <silent> gk <Plug>ParaglideUpAny
 ```
+
+
+## Todo
+
+- [ ] Visual mode support
 
 
 ## Related plugins
