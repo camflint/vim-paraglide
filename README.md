@@ -10,6 +10,11 @@ vim-paraglide is a simple plugin to make navigating around paragraphs easier. Th
 * works with motions (operator-pending mode)
 
 
+## Demo
+
+![Embedded demo .GIF](media/demo.gif)
+
+
 ## Default mappings
 
 | Key        | Mapping                                         |
