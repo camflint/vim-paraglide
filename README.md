@@ -31,3 +31,11 @@ To set up a custom mapping, add the following to your .vimrc:
 noremap <silent> gj <Plug>ParaglideDownAny
 noremap <silent> gk <Plug>ParaglideUpAny
 ```
+
+
+## Related plugins
+
+If you like the idea of this plugin, you may also be interested in:
+
+* [targets.vim](https://github.com/wellle/targets.vim) - Vim plugin that provides additional text objects
+* [vim-easymotion](https://github.com/easymotion/vim-easymotion) - Vim motions on speed!
