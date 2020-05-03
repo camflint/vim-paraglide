@@ -3,23 +3,53 @@
 " Version: 1.0
 " License: MIT
 
-if exists('g:loaded_paraglide') || &cp
+" Section: Global data.
+
+if get(g:, 'loaded_paraglide', 0) || &cp
   finish
 endif
-let g:loaded_paraglide = 0
+let g:loaded_paraglide = 1
+
+" When entering visual mode, we change the updatetime->0 and then change it back
+" when reentering normal mode. This is a hack used to detect when the user
+" leaves visual mode.
+" let s:saved_updatetime = v:null
+
+" When entering visual mode, we save the beginning cursor position so that we
+" can maintain the highlighting while navigating paragraphs.
+" let s:saved_visual_marks = {}
 
 " Section: Functions
 
+const s:re_empty_line = '\v^\s*$'
+const s:re_nonempty_line = '\v^\s*[^\s]+.*$'
+
+" function! s:enter_visual_mode()
+"   let s:saved_updatetime = &updatetime 
+"   let &updatetime = 0
+"   let s:saved_visual_marks[bufnr()] = getcurpos()
+"   return '' " Return nothing to no-op.
+" endfunction
+
+" function! s:exit_visual_mode()
+"   " echom 'VISUALENTER: clear curpos for buffer '.bufnr()
+"   let s:saved_visual_marks[bufnr()] = v:null
+"   if !empty(s:saved_updatetime)
+"     let &updatetime = s:saved_updatetime
+"     let s:saved_updatetime = v:null
+"   endif
+"   return '' " Return nothing to no-op.
+" endfunction
+
 function! s:get_top_bottom_edge()
   const line = line('.')
-  const regex = '\v^$'
-  const at_top = (line == 1) || (getline(line - 1) =~ regex)
-  const at_bottom = (line == line('$')) || (getline(line + 1) =~ regex)
+  const at_top = (line == 1) || (getline(line - 1) =~ s:re_empty_line)
+  const at_bottom = (line == line('$')) || (getline(line + 1) =~ s:re_empty_line)
   return [at_top, at_bottom]
 endfunction
 
 " direction=down|up, edge=start|end|any
-function! s:jump_paragraph_edge(direction, edge)
+function! s:jump_paragraph_edge(direction, edge, mode)
   const down = a:direction ==# 'down'
   const up = !down
   const start = a:edge ==# 'start'
@@ -28,12 +58,18 @@ function! s:jump_paragraph_edge(direction, edge)
 
   const dirsign = down ? 1 : -1
   const flags = 'W' . (down ? '' : 'b')
-  const re_empty_line = '\v^$'
-  const re_nonempty_line = '\v^.+$'
+  const saved_pos = getcurpos()
+  const [_bufnum, saved_linenum, saved_col; _rest] = saved_pos
+  const viz = tolower(a:mode) =~ '\v^[vs]$'
+
+  " Restore visual mode.
+  if viz
+    normal gv
+  endif
 
   " Jump out of the current paragraph if we need to.
   let jump_out = v:false
-  if getline('.') =~ re_nonempty_line
+  if getline('.') =~ s:re_nonempty_line
     let [at_top_edge, at_bottom_edge] = s:get_top_bottom_edge()
     if (down && at_bottom_edge) || (up && at_top_edge)
       let jump_out = v:true
@@ -42,12 +78,12 @@ function! s:jump_paragraph_edge(direction, edge)
     endif
   endif
   if jump_out
-    if !search(re_empty_line, flags) | return | endif
+    if !search(s:re_empty_line, flags) | return | endif
   endif
 
   " Make sure we land in a paragraph.
-  if getline('.') =~ re_empty_line
-    if !search(re_nonempty_line, flags) | return | endif
+  if getline('.') =~ s:re_empty_line
+    if !search(s:re_nonempty_line, flags) | return | endif
   endif
 
   " Snap to the edge if not already.
@@ -61,42 +97,76 @@ function! s:jump_paragraph_edge(direction, edge)
     let jump_again = v:true
   endif
   if jump_again
-    const re_boundary = re_empty_line . (down ? '|%$' : '|%^')
-    if search(re_boundary, flags) && getline('.') =~ re_empty_line
+    const re_boundary = s:re_empty_line . (down ? '|%$' : '|%^')
+    if search(re_boundary, flags) && getline('.') =~ s:re_empty_line
       call cursor(line('.') - dirsign, 1)
     endif
   endif
+
+  " Restore selection, if needed.
+  "if viz && !empty(s:saved_visual_marks[bufnr()])
+  "  let tmp = s:saved_visual_marks[bufnr()]
+  "  let tmp2 = getcurpos()
+  "  " echom 'Select range ['.tmp[1].','.tmp[2].'] to ['.tmp2[1].','.tmp2[2].'] for buffer '.bufnr()
+  "  call setpos("'a", s:saved_visual_marks[bufnr()])
+  "  call execute('normal ' . visualmode() . "'a'")
+  "  "let s:saved_visual_marks[bufnr()] = v:null
+  "endif
+
+  " Restore column, off, and curswant.
+  " This is necessary because we had to change the cursor position for search()s.
+  let pos = saved_pos
+  let pos[1] = getpos('.')[1] " At the end, we'll have only moved the line number.
+  call setpos('.', pos)
+  " echom '[END] jump_paragraph_edge'
 endfunction
 
 " Section: Maps
 
-nnoremap <script> <Plug>ParaglideDownStart :<C-U>call <SID>jump_paragraph_edge('down', 'start')<CR>
-onoremap <script> <Plug>ParaglideDownStart :<C-U>call <SID>jump_paragraph_edge('down', 'start')<CR>
-nnoremap <script> <Plug>ParaglideDownEnd   :<C-U>call <SID>jump_paragraph_edge('down', 'end')<CR>
-onoremap <script> <Plug>ParaglideDownEnd   :<C-U>call <SID>jump_paragraph_edge('down', 'end')<CR>
-nnoremap <script> <Plug>ParaglideUpStart   :<C-U>call <SID>jump_paragraph_edge('up', 'start')<CR>
-onoremap <script> <Plug>ParaglideUpStart   :<C-U>call <SID>jump_paragraph_edge('up', 'start')<CR>
-nnoremap <script> <Plug>ParaglideUpEnd     :<C-U>call <SID>jump_paragraph_edge('up', 'end')<CR>
-onoremap <script> <Plug>ParaglideUpEnd     :<C-U>call <SID>jump_paragraph_edge('up', 'end')<CR>
-nnoremap <script> <Plug>ParaglideDownAny   :<C-U>call <SID>jump_paragraph_edge('down', 'any')<CR>
-onoremap <script> <Plug>ParaglideDownAny   :<C-U>call <SID>jump_paragraph_edge('down', 'any')<CR>
-nnoremap <script> <Plug>ParaglideUpAny     :<C-U>call <SID>jump_paragraph_edge('up', 'any')<CR>
-onoremap <script> <Plug>ParaglideUpAny     :<C-U>call <SID>jump_paragraph_edge('up', 'any')<CR>
+for mode_ in ['n', 'v', 'o']
+  for direction in ['down', 'up']
+    for edge in ['start', 'end', 'any']
+      let s:lhs = '<Plug>Paraglide'.toupper(direction[0]).direction[1:].toupper(edge[0]).edge[1:]
+      let s:rhs = ':<C-U>call <SID>jump_paragraph_edge("'.direction.'", "'.edge.'", "'.mode_.'")<CR>'
+      let s:cmd = mode_.'noremap <script> '.s:lhs.' '.s:rhs
+      " echom s:cmd
+      call execute(s:cmd, 'silent')
+      unlet s:lhs s:rhs s:cmd
+    endfor
+  endfor
+endfor
 
 function! s:default_maps()
-  nmap <silent> <down>  <Plug>ParaglideDownStart
-  omap <silent> <down>  <Plug>ParaglideDownStart
-  nmap <silent> }       <Plug>ParaglideDownEnd
-  omap <silent> }       <Plug>ParaglideDownEnd
-  nmap <silent> <up>    <Plug>ParaglideUpStart
-  omap <silent> <up>    <Plug>ParaglideUpStart
-  nmap <silent> {       <Plug>ParaglideUpEnd
-  omap <silent> {       <Plug>ParaglideUpEnd
-  nmap <silent><nowait> g<down> <Plug>ParaglideDownAny
-  omap <silent><nowait> g<down> <Plug>ParaglideDownAny
-  nmap <silent><nowait> g<up>   <Plug>ParaglideUpAny
-  omap <silent><nowait> g<up>   <Plug>ParaglideUpAny
+  let definitions = {
+          \ '<down>': '<Plug>ParaglideDownStart',
+          \ '<up>': '<Plug>ParaglideUpStart',
+          \ 'g<down>': '<Plug>ParaglideDownAny',
+          \ 'g<up>' : '<Plug>ParaglideUpAny',
+          \ '}' : '<Plug>ParaglideDownEnd',
+          \ '{' : '<Plug>ParaglideUpEnd'
+        \ }
+  for mode_ in ['n', 'v', 'o']
+    for [key, value] in items(definitions)
+      if !hasmapto(value, mode_)
+        let cmd = mode_.'map <silent><unique><nowait> '.key.' '.value
+        " echom cmd
+        call execute(cmd, 'silent')
+      endif
+    endfor
+  endfor
 endfunction
+
+" Hook v, V, and C-v.
+" vnoremap <expr> <SID>EnterVisualMode <SID>enter_visual_mode()
+" nnoremap <script> v v<SID>EnterVisualMode
+" nnoremap <script> V V<SID>EnterVisualMode
+" nnoremap <script> <C-v> <C-v><SID>EnterVisualMode
+
+" Hook exit visual mode (actually, enter normal mode).
+" augroup EnterVisualMode
+"   autocmd!
+"   autocmd CursorHold * call <SID>exit_visual_mode()
+" augroup END
 
 if get(g:, 'paraglide_default_maps', 1) == 1
   call s:default_maps()
