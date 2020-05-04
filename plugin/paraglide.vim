@@ -3,7 +3,7 @@
 " Version: 1.0
 " License: MIT
 
-" Section: Global data.
+" Section: Globals.
 
 if get(g:, 'loaded_paraglide', 0) || &cp
   finish
@@ -11,14 +11,19 @@ endif
 let g:loaded_paraglide = 1
 
 " Section: Settings.
+
+let s:default_maps    = get(g:, 'paraglide_default_maps', 1)
 let s:modify_jumplist = get(g:, 'paraglide_modify_jumplist', 1)
+let s:wrap            = get(g:, 'paraglide_wrap', 0)
 
-" Section: Functions
+" Section: Regular expressions.
 
-const s:re_empty_line = '\v^\s*$'
-const s:re_empty_line_from_col = '\v^.{,{count}}\s*$'  
-const s:re_nonempty_line = '\v^\s*[^\s]+.*$'
+const s:re_empty_line             = '\v^\s*$'
+const s:re_empty_line_from_col    = '\v^.{,{count}}\s*$'
+const s:re_nonempty_line          = '\v^\s*[^\s]+.*$'
 const s:re_nonempty_line_from_col = '\v^.{{count}}\s*[^\s]+.*$'
+
+" Section: Functions.
 
 function! s:get_top_bottom_edge(re_empty_line)
   const line = line('.')
@@ -27,7 +32,7 @@ function! s:get_top_bottom_edge(re_empty_line)
   return [at_top, at_bottom]
 endfunction
 
-" direction=down|up, edge=start|end|any
+" direction=down|up, edge=start|end|block|any
 function! s:jump_paragraph_edge(direction, edge, mode)
   const down = a:direction ==# 'down'
   const up = !down
@@ -37,7 +42,7 @@ function! s:jump_paragraph_edge(direction, edge, mode)
   const any = (!start && !end) || block
 
   const dirsign = down ? 1 : -1
-  const flags = 'zW' . (down ? '' : 'b')
+  const flags = 'z' . (!s:wrap ? 'W' : '') . (down ? '' : 'b')
   const saved_pos = getcurpos()
   const viz = tolower(a:mode) =~ '\v^[vs]$'
   const vblock = a:mode ==# ''
@@ -122,19 +127,19 @@ for mode_ in ['n', 'v', 'o']
   endfor
 endfor
 
-function! s:default_maps()
-  let definitions = {
-          \ '<down>': '<Plug>ParaglideDownAny',
-          \ '<up>': '<Plug>ParaglideUpAny',
-          \ '<S-down>': '<Plug>ParaglideDownStart',
-          \ '<S-up>' : '<Plug>ParaglideUpStart',
-          \ '}' : '<Plug>ParaglideDownEnd',
-          \ '{' : '<Plug>ParaglideUpEnd',
-          \ 'g<down>': '<Plug>ParaglideDownBlock',
-          \ 'g<up>': '<Plug>ParaglideUpBlock',
-        \ }
+function! s:enable_default_maps()
+  let defs = {
+    \ '<down>'   : '<Plug>ParaglideDownAny',
+    \ '<up>'     : '<Plug>ParaglideUpAny',
+    \ '<S-down>' : '<Plug>ParaglideDownStart',
+    \ '<S-up>'   : '<Plug>ParaglideUpStart',
+    \ '}'        : '<Plug>ParaglideDownEnd',
+    \ '{'        : '<Plug>ParaglideUpEnd',
+    \ 'g<down>'  : '<Plug>ParaglideDownBlock',
+    \ 'g<up>'    : '<Plug>ParaglideUpBlock',
+  \ }
   for mode_ in ['n', 'v', 'o']
-    for [key, value] in items(definitions)
+    for [key, value] in items(defs)
       if !hasmapto(value, mode_)
         let cmd = mode_.'map <silent><unique><nowait> '.key.' '.value
         call execute(cmd, 'silent')
@@ -143,8 +148,8 @@ function! s:default_maps()
   endfor
 endfunction
 
-if get(g:, 'paraglide_default_maps', 1) == 1
-  call s:default_maps()
+if s:default_maps
+  call s:enable_default_maps()
 endif
 
 " Section: Testing
