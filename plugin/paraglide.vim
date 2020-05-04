@@ -20,8 +20,8 @@ let s:wrap            = get(g:, 'paraglide_wrap', 0)
 
 const s:re_empty_line             = '\v^\s*$'
 const s:re_empty_line_from_col    = '\v^.{,{count}}\s*$'
-const s:re_nonempty_line          = '\v^\s*[^\s]+.*$'
-const s:re_nonempty_line_from_col = '\v^.{{count}}\s*[^\s]+.*$'
+const s:re_nonempty_line          = '\v^\s*[^[:space:]]+.*$'
+const s:re_nonempty_line_from_col = '\v^.{{count}}\s*[^[:space:]]+.*$'
 
 " Section: Functions.
 
@@ -69,7 +69,6 @@ function! s:jump_paragraph_edge(direction, edge, mode)
     normal gv
   endif
 
-  " 
   " Jump out of the current paragraph, if needed.
   let jump_out = v:false
   if getline('.') =~ re_nonempty_line
