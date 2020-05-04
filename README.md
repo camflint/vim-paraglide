@@ -1,6 +1,6 @@
 # vim-paraglide 🪂
 
-vim-paraglide is a simple plugin to make navigating paragraphs easier.
+vim-paraglide is a plugin to make navigating paragraphs easier.
 
 <!-- vim-markdown-toc GFM -->
 
