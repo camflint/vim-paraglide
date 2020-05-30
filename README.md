@@ -31,13 +31,13 @@ The standard paragraph motions also don't work very well with blocks, such as wh
 
 ### Jump to edges
 
-![Demo: jumping to all edges](media/demo1.gif)
+![Demo: jumping to all edges](https://user-images.githubusercontent.com/2079548/83337833-69e86c80-a273-11ea-8782-653548b17db9.gif)
 
 Default keybinding: `<down>`/`<up>`.
 
 ### Jump to only top or bottom edges
 
-![Demo: jumping to only top or bottom edges](media/demo2.gif)
+![Demo: jumping to only top or bottom edges](https://user-images.githubusercontent.com/2079548/83337836-6fde4d80-a273-11ea-9bb2-f8f01a67e08d.gif)
 
 Default keybindings:
 
@@ -48,7 +48,7 @@ Tip: hold down `shift` and use the arrow keys to move across paragraphs quickly,
 
 ### Block, or column-aware jumps
 
-![Demo: block, or column-aware jumps](media/demo3.gif)
+![Demo: block, or column-aware jumps](https://user-images.githubusercontent.com/2079548/83337838-710f7a80-a273-11ea-937e-d7bf2648364b.gif)
 
 Default keybinding: `g<down>`/`g<up>`.
 
@@ -56,11 +56,11 @@ This works by ignoring characters to the left of the cursor column when searchin
 
 ### Support for visual mode
 
-![Demo: visual mode](media/demo4.gif)
+![Demo: visual mode](https://user-images.githubusercontent.com/2079548/83337839-72d93e00-a273-11ea-892e-67679b8f5878.gif)
 
 ### Support for motions
 
-![Demo: visual mode](media/demo5.gif)
+![Demo: visual mode](https://user-images.githubusercontent.com/2079548/83337841-74a30180-a273-11ea-8f67-d97cbc5aa8e5.gif)
 
 
 ## Mappings
