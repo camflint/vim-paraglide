@@ -110,3 +110,4 @@ If you like the idea of this plugin, you may also be interested in:
 
 * [targets.vim](https://github.com/wellle/targets.vim) - Vim plugin that provides additional text objects
 * [vim-easymotion](https://github.com/easymotion/vim-easymotion) - Vim motions on speed!
+* [vim-edgemotion](https://github.com/haya14busa/vim-edgemotion) - Move to the edge!
